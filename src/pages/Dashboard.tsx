@@ -1,6 +1,11 @@
 import { teams, matches, getLiveMatches, getTeamById, liveCommentary } from '../data/iplData';
+import { useState, useEffect } from 'react';
 
-const liveMatches = getLiveMatches();
+// Default fallback data
+const fallbackLiveMatches = getLiveMatches();
+
+// Use your Cloudflare Worker URL here
+const PROXY_URL = "https://ipl-2026-pro1.virendraingale98.workers.dev/";
 
 function CommentaryBall({ c }: { c: typeof liveCommentary[0] }) {
   const cls = c.isWicket ? 'ball-wicket' : c.isSix ? 'ball-six' : c.isFour ? 'ball-four' : 'ball-normal';
@@ -24,6 +29,47 @@ function CommentaryBall({ c }: { c: typeof liveCommentary[0] }) {
 
 export default function Dashboard() {
   const sortedTeams = [...teams].sort((a, b) => b.points - a.points).slice(0, 4);
+  const [liveMatches, setLiveMatches] = useState(fallbackLiveMatches);
+  const [isFetchingLive, setIsFetchingLive] = useState(false);
+
+  useEffect(() => {
+    // 🌍 Fetching Live Data from your Secure Cloudflare Proxy!
+    const fetchLiveStats = async () => {
+      try {
+        setIsFetchingLive(true);
+        const response = await fetch(PROXY_URL);
+        
+        if (response.ok) {
+          const liveData = await response.json();
+          console.log("🔥 Live API Data Received: ", liveData);
+          
+          /* 
+            TODO: Once you see the format of the data in your browser console,
+            you map the liveData into the expected format here:
+            
+            setLiveMatches([{
+              id: liveData.id,
+              homeTeamId: liveData.team1_id,
+              awayTeamId: liveData.team2_id,
+              ...etc
+            }]);
+          */
+          
+        } else {
+          console.warn("Proxy returned an error. Using simulated data.");
+        }
+      } catch (error) {
+        console.error("Failed to connect to proxy. Using simulated data.", error);
+      } finally {
+        setIsFetchingLive(false);
+      }
+    };
+
+    fetchLiveStats();
+    // Refresh the live data every 10 seconds
+    const interval = setInterval(fetchLiveStats, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="page fade-in">
@@ -61,9 +107,10 @@ export default function Dashboard() {
           return (
             <div key={match.id} className="mb-32">
               <div className="section-header">
-                <div className="section-title">
+                <div className="section-title" style={{ display: 'flex', alignItems: 'center' }}>
                   <span className="live-indicator"><span className="live-dot" />LIVE</span>
                   <span style={{ marginLeft: 8 }}>Match {match.matchNumber}</span>
+                  {isFetchingLive && <span style={{ marginLeft: 12, fontSize: 11, color: 'var(--text-muted)' }}>↻ Syncing...</span>}
                 </div>
               </div>
               <div className="live-match-card">
