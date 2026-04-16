@@ -4,5 +4,5 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/ipl-2026-pro/',
+  base: '/ipl-2026-pro1/',
 })
