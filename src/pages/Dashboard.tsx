@@ -64,10 +64,14 @@ export default function Dashboard() {
               status: matchInfo.state || 'Live',
               homeRapidName: matchInfo.team1?.name || "Home",
               awayRapidName: matchInfo.team2?.name || "Away",
+              // Provide required default fields to satisfy TypeScript
+              city: matchInfo.venue?.city || 'Unknown',
+              date: new Date().toISOString(),
+              time: 'TBA'
             };
             
             // Override the static UI exactly with the live RapidAPI feed
-            setLiveMatches([dynamicMatch]);
+            setLiveMatches([dynamicMatch as any]);
             console.log("✅ UI Updated with RapidAPI Data!");
           } else {
             console.warn("RapidAPI returned empty data {}. Using simulated data to prevent UI from breaking.");
@@ -144,14 +148,14 @@ export default function Dashboard() {
                 <div className="match-teams">
                   <div className="match-team">
                     <div className="team-emoji">{home ? home.logo : '🏏'}</div>
-                    <div className="team-name-sm" style={{ color: home ? home.color : '#fff' }}>{home ? home.shortName : match.homeRapidName}</div>
+                    <div className="team-name-sm" style={{ color: home ? home.color : '#fff' }}>{home ? home.shortName : (match as any).homeRapidName}</div>
                     <div className="team-score">{match.homeScore?.split(' ')[0] || '-'}</div>
                     <div className="team-score-detail">{match.homeScore?.split(' ').slice(1).join(' ')}</div>
                   </div>
                   <div className="vs-divider">VS</div>
                   <div className="match-team">
                     <div className="team-emoji">{away ? away.logo : '🏏'}</div>
-                    <div className="team-name-sm" style={{ color: away ? away.color : '#fff' }}>{away ? away.shortName : match.awayRapidName}</div>
+                    <div className="team-name-sm" style={{ color: away ? away.color : '#fff' }}>{away ? away.shortName : (match as any).awayRapidName}</div>
                     <div className="team-score" style={{ color: 'var(--text-muted)', fontSize: 18 }}>Yet to bat</div>
                   </div>
                 </div>
