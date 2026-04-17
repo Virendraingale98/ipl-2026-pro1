@@ -66,8 +66,8 @@ export default function Dashboard() {
     };
 
     fetchLiveStats();
-    // Refresh the live data every 10 seconds
-    const interval = setInterval(fetchLiveStats, 10000);
+    // RapidAPI free tiers have strict limits. Refreshing every 60 seconds (60000ms) prevents "Too many requests" limits.
+    const interval = setInterval(fetchLiveStats, 60000);
     return () => clearInterval(interval);
   }, []);
 
