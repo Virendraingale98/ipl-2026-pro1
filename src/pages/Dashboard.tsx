@@ -43,18 +43,35 @@ export default function Dashboard() {
           const liveData = await response.json();
           console.log("🔥 Live API Data Received: ", liveData);
           
-          /* 
-            TODO: Once you see the format of the data in your browser console,
-            you map the liveData into the expected format here:
-            
-            setLiveMatches([{
-              id: liveData.id,
-              homeTeamId: liveData.team1_id,
-              awayTeamId: liveData.team2_id,
-              ...etc
-            }]);
-          */
+          // Check if RapidAPI returned a valid object with 'response.matchInfo'
+          const apiResponse = liveData.response || liveData;
           
+          // Only update UI if matchInfo actually has data (not empty {})
+          if (apiResponse && apiResponse.matchInfo && Object.keys(apiResponse.matchInfo).length > 0) {
+            const matchInfo = apiResponse.matchInfo;
+            const matchScore = apiResponse.matchScore;
+            
+            // Defensively map whatever properties RapidAPI provides into our App's format
+            const dynamicMatch = {
+              id: matchInfo.matchId?.toString() || 'live-1',
+              matchNumber: matchInfo.matchDescription?.split(' ')[0] || '1',
+              venue: matchInfo.venue?.name || 'Live Stadium',
+              toss: matchInfo.tossResults?.decision || 'Toss info unavailable',
+              currentOver: matchScore?.team1Score?.inngs1?.overs || '-',
+              homeTeamId: matchInfo.team1?.shortName || fallbackLiveMatches[0].homeTeamId,
+              awayTeamId: matchInfo.team2?.shortName || fallbackLiveMatches[0].awayTeamId,
+              homeScore: matchScore?.team1Score?.inngs1 ? `${matchScore.team1Score.inngs1.runs}/${matchScore.team1Score.inngs1.wickets} (${matchScore.team1Score.inngs1.overs})` : "Yet to bat",
+              status: matchInfo.state || 'Live',
+              homeRapidName: matchInfo.team1?.name || "Home",
+              awayRapidName: matchInfo.team2?.name || "Away",
+            };
+            
+            // Override the static UI exactly with the live RapidAPI feed
+            setLiveMatches([dynamicMatch]);
+            console.log("✅ UI Updated with RapidAPI Data!");
+          } else {
+            console.warn("RapidAPI returned empty data {}. Using simulated data to prevent UI from breaking.");
+          }
         } else {
           console.warn("Proxy returned an error. Using simulated data.");
         }
@@ -126,15 +143,15 @@ export default function Dashboard() {
 
                 <div className="match-teams">
                   <div className="match-team">
-                    <div className="team-emoji">{home.logo}</div>
-                    <div className="team-name-sm" style={{ color: home.color }}>{home.shortName}</div>
-                    <div className="team-score">{match.homeScore?.split(' ')[0]}</div>
+                    <div className="team-emoji">{home ? home.logo : '🏏'}</div>
+                    <div className="team-name-sm" style={{ color: home ? home.color : '#fff' }}>{home ? home.shortName : match.homeRapidName}</div>
+                    <div className="team-score">{match.homeScore?.split(' ')[0] || '-'}</div>
                     <div className="team-score-detail">{match.homeScore?.split(' ').slice(1).join(' ')}</div>
                   </div>
                   <div className="vs-divider">VS</div>
                   <div className="match-team">
-                    <div className="team-emoji">{away.logo}</div>
-                    <div className="team-name-sm" style={{ color: away.color }}>{away.shortName}</div>
+                    <div className="team-emoji">{away ? away.logo : '🏏'}</div>
+                    <div className="team-name-sm" style={{ color: away ? away.color : '#fff' }}>{away ? away.shortName : match.awayRapidName}</div>
                     <div className="team-score" style={{ color: 'var(--text-muted)', fontSize: 18 }}>Yet to bat</div>
                   </div>
                 </div>
