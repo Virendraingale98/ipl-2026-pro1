@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 // Default fallback data
 const fallbackLiveMatches = getLiveMatches();
 
-// Use your Cloudflare Worker URL here
-const PROXY_URL = "https://ipl-2026-pro1.virendraingale98.workers.dev/";
+// 🌍 Your unique Cloudflare Worker URL
+const PROXY_URL = "https://tight-sky-9278.shubhamukey2609.workers.dev/";
 
 function CommentaryBall({ c }: { c: typeof liveCommentary[0] }) {
   const cls = c.isWicket ? 'ball-wicket' : c.isSix ? 'ball-six' : c.isFour ? 'ball-four' : 'ball-normal';
